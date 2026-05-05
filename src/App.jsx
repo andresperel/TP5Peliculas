@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Buscador from "./components/SearchBar";
 import ListaPeliculas from "./components/MovieList";
 import Cargando from "./components/Loader";
@@ -11,33 +11,43 @@ function App() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [buscado, setBuscado] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const buscar = async (texto) => {
-    setCargando(true);
-    setError("");
+  const buscar = (texto) => {
+    setQuery(texto);
     setBuscado(true);
-
-    try {
-      const data = await buscarPeliculas(texto);
-
-      if (data.Response === "False") {
-        setPeliculas([]);
-      } else {
-        setPeliculas(data.Search || []);
-      }
-    } catch {
-      setError("Ocurrió un error al buscar");
-    }
-
-    setCargando(false);
   };
 
-  // DESACTIVADO
+  useEffect(() => {
+    if (!query) return;
+
+    const traerPeliculas = async () => {
+      setCargando(true);
+      setError("");
+
+      try {
+        const data = await buscarPeliculas(query);
+
+        if (data.Response === "False") {
+          setPeliculas([]);
+        } else {
+          setPeliculas(data.Search || []);
+        }
+      } catch {
+        setError("Ocurrió un error al buscar");
+      }
+
+      setCargando(false);
+    };
+
+    traerPeliculas();
+  }, [query]);
+
   const seleccionar = () => {};
 
   return (
     <div>
-      <h1> Buscador de Películas</h1>
+      <h1>Buscador de Películas</h1>
 
       <Buscador onBuscar={buscar} />
 
